@@ -21,3 +21,8 @@ Usage
 
     java -jar dist/java-extjs-compiler.jar --app YourNamespace.Application \
     --src src/dir --output path/to/app-all.min.js
+
+Optional:
+
+--prepend Optional path to a javascript file to prepend to the the ouput file
+before the compiled output.

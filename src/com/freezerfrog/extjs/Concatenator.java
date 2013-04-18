@@ -4,8 +4,6 @@
  */
 package com.freezerfrog.extjs;
 
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,25 +14,16 @@ import java.util.ArrayList;
  */
 public class Concatenator
 {
-    public void concatenate(ArrayList<JsFile> jsFiles, File outputFile) throws IOException
+    public void concatenate(ArrayList<JsFile> jsFiles, FileWriter fw) throws IOException
     {
-        if (! outputFile.exists()) {
-            outputFile.createNewFile();
-        }
-
-        FileWriter fw = new FileWriter(outputFile.getAbsoluteFile());
-        BufferedWriter bw = new BufferedWriter(fw);
-        
         ArrayList<JsFile> concatenated = new ArrayList<JsFile>();
         for (JsFile jsFile : jsFiles) {
             if (concatenated.contains(jsFile)) {
                 continue;
             }
             
-            bw.write(jsFile.getContents() + "\n");
+            fw.write(jsFile.getContents() + "\n");
             concatenated.add(jsFile);
         }
-        
-        bw.close();
     }
 }

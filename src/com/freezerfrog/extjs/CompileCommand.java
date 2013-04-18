@@ -17,7 +17,9 @@ import com.google.javascript.jscomp.Compiler;
 import com.google.javascript.jscomp.CompilationLevel;
 import com.google.javascript.jscomp.CompilerOptions;
 import com.google.javascript.jscomp.SourceFile;
+import java.io.FileReader;
 import java.io.FileWriter;
+import org.apache.commons.io.IOUtils;
 
 /**
  *
@@ -32,7 +34,7 @@ public class CompileCommand
         
         options.addOption("h", "help", false, "print help and exit");
         
-        Option sourceOpt = new Option("s", true, "source directory");
+        Option sourceOpt = new Option("s", true, "source directory or directories");
         sourceOpt.setRequired(true);
         sourceOpt.setLongOpt("src");
         options.addOption(sourceOpt);
@@ -47,6 +49,11 @@ public class CompileCommand
         outputOpt.setRequired(true);
         outputOpt.setLongOpt("output");
         options.addOption(outputOpt);
+        
+        Option prepend = new Option("p", true, "prepend js file(s) before any others");
+        prepend.setRequired(false);
+        prepend.setLongOpt("prepend");
+        options.addOption(prepend);
         
         GnuParser parser = new GnuParser();
         
@@ -66,35 +73,49 @@ public class CompileCommand
                     cmd.getOptionValue('a'));
             
             System.out.println("concatenating " + deps.size() + " files");
-            File outputFile = new File(cmd.getOptionValue('o'));
             Concatenator concatenator = new Concatenator();
-            concatenator.concatenate(deps, outputFile);
-            
+            File concatFile = File.createTempFile("nextjscompile-", ".txt");
+            try (FileWriter tmpFw = new FileWriter(concatFile.getAbsolutePath())) {
+                concatenator.concatenate(deps, tmpFw);
+            }
+
             System.out.println("compiling");
             Compiler.setLoggingLevel(Level.SEVERE);
             Compiler compiler = new Compiler();
-            
+
             CompilerOptions compOpts = new CompilerOptions();
             CompilationLevel.SIMPLE_OPTIMIZATIONS
                     .setOptionsForCompilationLevel(compOpts);
-            
-            SourceFile inputJs = SourceFile.fromFile(outputFile);
+
+            SourceFile inputJs = SourceFile.fromFile(concatFile);
             SourceFile extern = SourceFile.fromCode("none", "");
             compiler.compile(extern, inputJs, compOpts);
+            concatFile.delete();
             
+            File outputFile = new File(cmd.getOptionValue('o'));
             if (! outputFile.exists()) {
                 outputFile.createNewFile();
             }
+            
             try (FileWriter fw = new FileWriter(outputFile.getAbsoluteFile())) {
-                fw.write(compiler.toSource() + "\n");
+                if (! outputFile.exists()) {
+                    outputFile.createNewFile();
+                }
+                if (cmd.hasOption('p')) {
+                    for (String prependFileName : cmd.getOptionValues('p')) {
+                        fw.write(IOUtils.toString(new FileReader(prependFileName)));
+                    }
+                }
+                
+                fw.write("\n" + compiler.toSource() + "\n");
+                fw.close();
             }
+            
             System.out.println("wrote to " + outputFile.getAbsoluteFile());
             return 0;
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             printHelp(options);
-        } catch (NullPointerException e) {
-            throw e;
         } catch (Exception e) {
             System.out.println("Exception " + e.getMessage());
         }
