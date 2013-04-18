@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Nextjscompiler by robap</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Nextjscompiler</h1>
+        <p>Alternative extjs app source code compiler</p>
+
+        <p class="view"><a href="https://github.com/robap/nextjscompiler">View the Project on GitHub <small>robap/nextjscompiler</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/robap/nextjscompiler/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/robap/nextjscompiler/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/robap/nextjscompiler">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>Extjs Compiler</h1>
+
+<p>This is an experiment in building a "compiled" javascript source file for an
+extjs application. </p>
+
+<h2>Why?</h2>
+
+<p>The official tool seems lacking in at least these areas:</p>
+
+<ul>
+<li>Exit status always returns 0 making it useless for deployment scripts</li>
+<li>It forces the use of a static html file as the input file. Front controller
+style web applications do not use a file like this so, the file must be created
+and maintained separately.</li>
+<li>Files are often not included in the build file.</li>
+</ul><p>So this tool aims to address these issues.</p>
+
+<h2>Usage</h2>
+
+<pre><code>java -jar dist/java-extjs-compiler.jar --app YourNamespace.Application \
+--src src/dir --output path/to/app-all.min.js
+</code></pre>
+
+<p>Optional:</p>
+
+<p>--prepend Optional path to a javascript file to prepend to the the ouput file
+before the compiled output.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/robap">robap</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
