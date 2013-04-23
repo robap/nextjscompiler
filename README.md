@@ -24,5 +24,27 @@ Usage
 
 Optional:
 
+--namespace-alias Optional map to use when directory name does not match namespace.
+For example, if the source files are in /foo/bar/app but the namespace is "Acme",
+pass a map like this: -n app:Acme
+
 --prepend Optional path to a javascript file to prepend to the the ouput file
 before the compiled output.
+
+
+Build the helloword sample application
+--------------------------------------
+
+Run the helloworld app in dev mode by opening a browser to:
+
+    file:///path/to/project/samples/helloworld/app_dev.html
+
+Run the helloworld app in build mod by first building the app.min.js file:
+
+    java -jar dist/java-extjs-compiler.jar -a Demo.application \
+    --output samples/helloworld/app.min.js --src samples/helloworld/app/ \
+    -n app:Demo
+
+Then open browser to:
+
+    file:///path/to/project/samples/helloworld/app_prod.html

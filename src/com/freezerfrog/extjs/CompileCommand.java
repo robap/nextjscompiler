@@ -39,6 +39,11 @@ public class CompileCommand
         sourceOpt.setLongOpt("src");
         options.addOption(sourceOpt);
         
+        Option nsOpt = new Option("n", true, "When your src directory name does not match your namespace, use this map to fix it");
+        nsOpt.setRequired(false);
+        nsOpt.setLongOpt("namespace-alias");
+        options.addOption(nsOpt);
+        
         Option appOpt = new Option("a", true, "the name of the class used to " +
                 "start assembling dependencies");
         appOpt.setLongOpt("app");
@@ -66,6 +71,11 @@ public class CompileCommand
             }
             
             MapBuilder mapBuilder = new MapBuilder();
+            
+            if (cmd.hasOption("n")) {
+                mapBuilder.setNamespaceMap(cmd.getOptionValue("n"));
+            }
+            
             JsFileMap jsFiles = mapBuilder.buildMap(cmd.getOptionValues('s'));
             
             DepsBuilder depsBuilder = new DepsBuilder();
@@ -118,6 +128,7 @@ public class CompileCommand
             printHelp(options);
         } catch (Exception e) {
             System.out.println("Exception " + e.getMessage());
+            e.printStackTrace();
         }
         
         return 1;

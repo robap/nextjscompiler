@@ -15,6 +15,9 @@ import org.apache.commons.io.FileUtils;
 public class MapBuilder
 {
     
+    private String baseDir;
+    private String namespace;
+    
     public JsFileMap buildMap(String[] dirNames)
     {
         String[] filters = {"js"};
@@ -37,11 +40,28 @@ public class MapBuilder
     
     private String getClassname(File baseDir, File jsFile)
     {
-        String classname = jsFile.getAbsolutePath()
+        String basePath = baseDir.getAbsolutePath();
+        String jsPath = jsFile.getAbsolutePath();
+        
+        String classname = jsPath
                 .replace(".js", "")
-                .replace(baseDir.getAbsolutePath() + "/", "")
+                .replace(basePath + "/", "")
                 .replace("/", ".");
         
+        if (this.baseDir.length() > 0 && this.namespace.length() > 0) {
+            classname = this.namespace + "." + classname;
+        }
+        
         return classname;
+    }
+
+    /**
+     * @todo This sucks. Find another way
+     * @param namespaceMap e.g. foo:bar
+     */
+    void setNamespaceMap(String namespaceMap) {
+        String[] parts = namespaceMap.split(":");
+        this.baseDir = parts[0];
+        this.namespace = parts[1];
     }
 }
