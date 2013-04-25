@@ -39,12 +39,7 @@ public class CompileCommand
         sourceOpt.setLongOpt("src");
         options.addOption(sourceOpt);
         
-        Option nsOpt = new Option("n", true, "When your src directory name does not match your namespace, use this map to fix it");
-        nsOpt.setRequired(false);
-        nsOpt.setLongOpt("namespace-alias");
-        options.addOption(nsOpt);
-        
-        Option appOpt = new Option("a", true, "the name of the class used to " +
+        Option appOpt = new Option("a", true, "the name of the FILE used to " +
                 "start assembling dependencies");
         appOpt.setLongOpt("app");
         appOpt.setRequired(true);
@@ -72,15 +67,11 @@ public class CompileCommand
             
             MapBuilder mapBuilder = new MapBuilder();
             
-            if (cmd.hasOption("n")) {
-                mapBuilder.setNamespaceMap(cmd.getOptionValue("n"));
-            }
-            
             JsFileMap jsFiles = mapBuilder.buildMap(cmd.getOptionValues('s'));
             
             DepsBuilder depsBuilder = new DepsBuilder();
             ArrayList<JsFile> deps = depsBuilder.buildDeps(jsFiles, 
-                    cmd.getOptionValue('a'));
+                    new JsFile(new File(cmd.getOptionValue('a'))));
             
             System.out.println("concatenating " + deps.size() + " files");
             Concatenator concatenator = new Concatenator();

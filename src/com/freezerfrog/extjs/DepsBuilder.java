@@ -17,22 +17,18 @@ public class DepsBuilder
 {
     private ArrayList<JsFile> lastDeps;
     
-    public ArrayList<JsFile> buildDeps(JsFileMap jsFileMap, String applicationClass) throws IOException
+    public ArrayList<JsFile> buildDeps(JsFileMap jsFileMap, JsFile appFile) throws IOException
     {
         lastDeps = new ArrayList<JsFile>();
         
-        JsFile appClassFile = jsFileMap.getFileByClassname(applicationClass);
-        
-        System.out.println("app file: " + appClassFile);
-        
-        return buildRecursiveDeps(appClassFile, jsFileMap);
+        return buildRecursiveDeps(appFile, jsFileMap, true);
     }
     
-    private ArrayList<JsFile> buildRecursiveDeps(JsFile inputFile, JsFileMap jsFileMap) throws IOException
+    private ArrayList<JsFile> buildRecursiveDeps(JsFile inputFile, JsFileMap jsFileMap, boolean isAppFile) throws IOException
     {
         ArrayList<JsFile> deps = new ArrayList<JsFile>();
         
-        ArrayList<JsFile> possibleDeps = getDependencies(inputFile, jsFileMap);
+        ArrayList<JsFile> possibleDeps = getDependencies(inputFile, jsFileMap, isAppFile);
         for (JsFile possibleDep : possibleDeps) {
             //guard against circular dependencies?
             if (lastDeps.contains(possibleDep)) {
@@ -40,7 +36,7 @@ public class DepsBuilder
             }
             lastDeps.add(possibleDep);
             
-            ArrayList<JsFile> nestedDeps = buildRecursiveDeps(possibleDep, jsFileMap);
+            ArrayList<JsFile> nestedDeps = buildRecursiveDeps(possibleDep, jsFileMap, false);
             for (JsFile nestedDep : nestedDeps) {
                 deps.add(nestedDep);
             }
@@ -52,7 +48,7 @@ public class DepsBuilder
         return deps;
     }
     
-    private ArrayList<JsFile> getDependencies(JsFile jsFile, JsFileMap jsFileMap) throws IOException
+    private ArrayList<JsFile> getDependencies(JsFile jsFile, JsFileMap jsFileMap, boolean isAppFile) throws IOException
     {
         ArrayList<JsFile> deps = new ArrayList<JsFile>();
         
@@ -68,7 +64,7 @@ public class DepsBuilder
             
             
             //exclude jsFile's class name as a dependency
-            if (possibleDepName.equals(jsFile.getClassname())) {
+            if (!isAppFile && possibleDepName.equals(jsFile.getClassname())) {
                 continue;
             }
             

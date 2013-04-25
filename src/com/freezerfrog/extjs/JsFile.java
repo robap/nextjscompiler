@@ -7,9 +7,8 @@ package com.freezerfrog.extjs;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -24,17 +23,32 @@ public class JsFile
     
     /**
      * 
-     * @param classname name of java script class
      * @param file file java script class is contained in
      */
-    JsFile(String classname, File file)
+    JsFile(File file)
     {
-        this.classname = classname;
+        this.classname = "";
         this.file = file;
     }
 
-    public String getClassname()
+    public String getClassname() throws IOException
     {
+        if(classname.length() > 0) {
+            return classname;
+        }
+        
+        //rid contents of c style comments
+        //http://stackoverflow.com/a/3945705/231774
+        String contents = this.getContents()
+                .replaceAll("/\\*[^*]*\\*+(?:[^*/][^*]*\\*+)*/", "");
+        
+        //Should match: Ext.define("Foo.bar", Ext.define('Foo.bar', etc
+        Pattern pattern = Pattern.compile("Ext\\.define\\(['\\\"]([A-Za-z\\.]+)['\\\"]");
+        Matcher matcher = pattern.matcher(contents);
+        while (matcher.find()) {
+            classname = matcher.group(1);
+        }
+        
         return classname;
     }
     
@@ -53,6 +67,4 @@ public class JsFile
     {
         return this.getPath();
     }
-    
-    
 }

@@ -4,6 +4,7 @@
  */
 package com.freezerfrog.extjs;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class JsFileMap
         map = new HashMap<String, JsFile>();
     }
     
-    public void add(JsFile jsFile)
+    public void add(JsFile jsFile) throws IOException
     {
         map.put(jsFile.getClassname(), jsFile);
     }
@@ -28,17 +29,5 @@ public class JsFileMap
     public JsFile getFileByClassname(String classname)
     {
         return map.get(classname);
-    }
-
-    @Override
-    public String toString()
-    {
-        String s = "";
-        for (Map.Entry pairs : map.entrySet()) {
-            JsFile jsFile = (JsFile) pairs.getValue();
-            s += jsFile.getClassname() + " => " + jsFile.getPath() + "\n";
-        }
-        
-        return s;
     }
 }
