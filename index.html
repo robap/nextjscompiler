@@ -52,16 +52,11 @@ and maintained separately.</li>
 
 <h2>Usage</h2>
 
-<pre><code>java -jar nextjs-compiler-latest.jar --app YourNamespace.Application \
+<pre><code>java -jar nextjs-compiler-latest.jar \--app your/entry/file.js \
 --src src/dir --output path/to/app-all.min.js
 </code></pre>
 
 <p>Optional:</p>
-<p>
---namespace-alias Optional map to use when directory name does not match namespace.
-For example, if the source files are in /foo/bar/app but the namespace is "Acme",
-pass a map like this: -n app:Acme
-</p>
 <p>--prepend Optional path to a javascript file to prepend to the the ouput file
 before the compiled output.</p>
 
@@ -71,9 +66,12 @@ before the compiled output.</p>
 </p>
 <pre><code>file:///path/to/project/samples/helloworld/app_dev.html</code></pre>
 <p>Run the helloworld app in build mod by first building the app.min.js file:</p>
-<pre><code>java -jar nextjs-compiler-latest.jar -a Demo.application \
-    --output samples/helloworld/app.min.js --src samples/helloworld/app/ \
-    -n app:Demo</code></pre>
+<pre><code>
+java -jar dist/nextjs-compiler-latest.jar \
+    -a samples/helloworld/app/application.js \
+    -o samples/helloworld/app.min.js \
+    -s samples/helloworld/app/
+</code></pre>
 <p>Then open browser to:</p>
 <pre><code>file:///path/to/project/samples/helloworld/app_prod.html</code></pre>
       </section>
