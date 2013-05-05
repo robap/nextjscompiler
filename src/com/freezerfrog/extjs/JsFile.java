@@ -8,13 +8,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 import sun.org.mozilla.javascript.Parser;
+import sun.org.mozilla.javascript.ast.ArrayLiteral;
 import sun.org.mozilla.javascript.ast.AstNode;
 import sun.org.mozilla.javascript.ast.FunctionCall;
 import sun.org.mozilla.javascript.ast.Name;
 import sun.org.mozilla.javascript.ast.NodeVisitor;
+import sun.org.mozilla.javascript.ast.ObjectLiteral;
+import sun.org.mozilla.javascript.ast.ObjectProperty;
 import sun.org.mozilla.javascript.ast.PropertyGet;
 import sun.org.mozilla.javascript.ast.StringLiteral;
 
@@ -25,6 +29,8 @@ import sun.org.mozilla.javascript.ast.StringLiteral;
 public class JsFile
 {
     private String classname;
+    
+    private ArrayList<String> deps;
     
     private File file;
     
@@ -37,6 +43,7 @@ public class JsFile
     JsFile(File file)
     {
         this.classname = "";
+        this.deps = new ArrayList();
         this.file = file;
         this.parsed = false;
     }
@@ -46,6 +53,18 @@ public class JsFile
         this.parse();
         
         return this.classname;
+    }
+    
+    /**
+     * Retrieve a list of dependency class names.
+     * 
+     * @return ArrayList<String>
+     */
+    public ArrayList<String> getDependencies() throws IOException
+    {
+        this.parse();
+        
+        return deps;
     }
     
     public String getContents() throws IOException
@@ -62,6 +81,26 @@ public class JsFile
     public String toString()
     {
         return this.getPath();
+    }
+    
+    private void addDep(String dep)
+    {
+        //a class cannot have itself as a dependency
+        if (dep.equals(classname)) {
+            return;
+        }
+        
+        //don't duplicate deps
+        if (deps.contains(dep)) {
+            return;
+        }
+        
+        deps.add(dep);
+    }
+    
+    private void addDep(StringLiteral dep)
+    {
+        addDep(dep.getValue());
     }
     
     /**
@@ -88,33 +127,26 @@ public class JsFile
     {
         @Override
         public boolean visit(AstNode node) {
-            setClassname(node);
-
-            return true;
-        }
-        
-        private void setClassname(AstNode node)
-        {
             //all extjs classnames are declared like this:
             //Ext.define('classname', {})
             //The first argument passed to Ext.define is the class name.
             
             if (!(node instanceof FunctionCall)) {
-                return;
+                return true;
             }
             
             FunctionCall funcCall = (FunctionCall) node;
             AstNode funcTarget = funcCall.getTarget();
             
             if (!(funcTarget instanceof PropertyGet)) {
-                return;
+                return true;
             }
             
             PropertyGet propGet = (PropertyGet) funcTarget;
             AstNode propTarget = propGet.getTarget();
             
             if (!(propTarget instanceof Name)) {
-                return;
+                return true;
             }
             
             Name propTargetName = (Name) propTarget;
@@ -129,9 +161,41 @@ public class JsFile
                         StringLiteral defArgStr = (StringLiteral) defArg;
                         classname = defArgStr.getValue();
                     }
+                    
+                    setDepsByLiteral((ObjectLiteral) args.get(1));
+                }
+            } else if ("Ext".equals(propTargetName.getIdentifier()) && 
+                    "require".equals(pgName.getIdentifier())) {
+                List<AstNode> args = funcCall.getArguments();
+                if (args.size() > 0) {
+                    AstNode reqArg = args.get(0);
+                    if (reqArg instanceof StringLiteral) {
+                        addDep((StringLiteral) reqArg);
+                    } else if (reqArg instanceof ArrayLiteral) {
+                        for (AstNode localDep : ((ArrayLiteral) reqArg).getElements()) {
+                            addDep((StringLiteral) localDep);
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private void setDepsByLiteral(ObjectLiteral node)
+        {
+            for (ObjectProperty config : node.getElements()) {
+                if (config.getLeft() instanceof Name) {
+                    Name configName = (Name) config.getLeft();
+                    if (("uses".equals(configName.getIdentifier()) || "requires".equals(configName.getIdentifier())) 
+                            && config.getRight() instanceof ArrayLiteral) {
+                        ArrayLiteral localDeps = (ArrayLiteral) config.getRight();
+                        for (AstNode localDep : localDeps.getElements()) {
+                            addDep((StringLiteral) localDep);
+                        }
+                    }
                 }
             }
         }
-
     }
 }

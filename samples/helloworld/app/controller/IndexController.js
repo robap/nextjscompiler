@@ -1,9 +1,7 @@
-Ext.require('Demo.controller.FooController');
-Ext.require('Demo.view.IndexView');
 
 Ext.define('Demo.controller.IndexController', {
     extend: 'Ext.app.Controller',
-    require: [
+    requires: [
         'Demo.view.IndexView', 
         'Demo.controller.FooController'
     ],

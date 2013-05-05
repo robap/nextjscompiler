@@ -1,6 +1,8 @@
 package com.freezerfrog.extjs;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,6 +56,27 @@ public class JsFileTest {
         JsFile instance = new JsFile(new File(path));
         String expResult = path;
         String result = instance.getPath();
+        assertEquals(expResult, result);
+    }
+    
+    /**
+     * Get deps defined by any of these means:
+     * config.requires
+     * config.uses
+     * Ext.require
+     * 
+     * Don't include the classname as a dep and don't include deps more than
+     * once
+     */
+    @Test
+    public void testGetDependencies() throws IOException {
+        String path = getClass().getResource("/fixtures/foo.js").getFile();
+        JsFile instance = new JsFile(new File(path));
+        ArrayList<String> expResult = new ArrayList();
+        expResult.add("OtherLib.SetByExtRequire");
+        expResult.add("Sample.Bar");
+        expResult.add("OtherLib.SetByUses");
+        ArrayList<String> result = instance.getDependencies();
         assertEquals(expResult, result);
     }
 }

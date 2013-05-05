@@ -6,8 +6,6 @@ package com.freezerfrog.extjs;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  *
@@ -19,16 +17,16 @@ public class DepsBuilder
     
     public ArrayList<JsFile> buildDeps(JsFileMap jsFileMap, JsFile appFile) throws IOException
     {
-        lastDeps = new ArrayList<JsFile>();
+        lastDeps = new ArrayList();
         
-        return buildRecursiveDeps(appFile, jsFileMap, true);
+        return buildRecursiveDeps(appFile, jsFileMap);
     }
     
-    private ArrayList<JsFile> buildRecursiveDeps(JsFile inputFile, JsFileMap jsFileMap, boolean isAppFile) throws IOException
+    private ArrayList<JsFile> buildRecursiveDeps(JsFile inputFile, JsFileMap jsFileMap) throws IOException
     {
-        ArrayList<JsFile> deps = new ArrayList<JsFile>();
+        ArrayList<JsFile> deps = new ArrayList();
         
-        ArrayList<JsFile> possibleDeps = getDependencies(inputFile, jsFileMap, isAppFile);
+        ArrayList<JsFile> possibleDeps = getDependencies(inputFile, jsFileMap);
         for (JsFile possibleDep : possibleDeps) {
             //guard against circular dependencies?
             if (lastDeps.contains(possibleDep)) {
@@ -36,7 +34,7 @@ public class DepsBuilder
             }
             lastDeps.add(possibleDep);
             
-            ArrayList<JsFile> nestedDeps = buildRecursiveDeps(possibleDep, jsFileMap, false);
+            ArrayList<JsFile> nestedDeps = buildRecursiveDeps(possibleDep, jsFileMap);
             for (JsFile nestedDep : nestedDeps) {
                 deps.add(nestedDep);
             }
@@ -48,33 +46,15 @@ public class DepsBuilder
         return deps;
     }
     
-    private ArrayList<JsFile> getDependencies(JsFile jsFile, JsFileMap jsFileMap, boolean isAppFile) throws IOException
+    private ArrayList<JsFile> getDependencies(JsFile jsFile, JsFileMap jsFileMap) throws IOException
     {
-        ArrayList<JsFile> deps = new ArrayList<JsFile>();
+        ArrayList<JsFile> deps = new ArrayList();
         
-        //rid contents of c style comments
-        //http://stackoverflow.com/a/3945705/231774
-        String contents = jsFile.getContents()
-                .replaceAll("/\\*[^*]*\\*+(?:[^*/][^*]*\\*+)*/", "");
-        
-        Pattern pattern = Pattern.compile("['\\\"]([A-z\\.]+)['\\\"]");
-        Matcher matcher = pattern.matcher(contents);
-        while (matcher.find()) {
-            String possibleDepName = matcher.group(1);
-            
-            
-            //exclude jsFile's class name as a dependency
-            if (!isAppFile && possibleDepName.equals(jsFile.getClassname())) {
-                continue;
-            }
-            
-            //make sure it is in the map, otherwise it is not a dependency
+        for (String possibleDepName : jsFile.getDependencies()) {
             JsFile depFile = jsFileMap.getFileByClassname(possibleDepName);
-            if (depFile == null) {
-                continue;
+            if (depFile != null) {
+                deps.add(depFile);
             }
-            
-            deps.add(depFile);
         }
         
         return deps;

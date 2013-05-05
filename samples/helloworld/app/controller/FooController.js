@@ -1,8 +1,7 @@
-Ext.require('Demo.view.FooView');
 
 Ext.define('Demo.controller.FooController', {
     extend: 'Ext.app.Controller',
-    require: [
+    requires: [
         'Demo.view.FooView'
     ],
     views: ['FooView'],
