@@ -54,6 +54,10 @@ public class DepsBuilder
             JsFile depFile = jsFileMap.getFileByClassname(possibleDepName);
             if (depFile != null) {
                 deps.add(depFile);
+            } else {
+                System.out.println("WARN class:" + jsFile.getClassname() 
+                        + " depname:" + possibleDepName 
+                        + " was not found in the map");
             }
         }
         
