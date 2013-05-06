@@ -162,7 +162,13 @@ public class JsFile
                         classname = defArgStr.getValue();
                     }
                     
-                    setDepsByLiteral((ObjectLiteral) args.get(1));
+                    if (args.get(1) instanceof ObjectLiteral) {
+                        setDepsByLiteral((ObjectLiteral) args.get(1));
+                    } else {
+                        System.out.println("WARN Ext.define does not conform to "
+                                + "sencha api. Deps cannot be handled. " 
+                                + getPath() + " " + args.get(1).getClass());
+                    }
                 }
             } else if ("Ext".equals(propTargetName.getIdentifier()) && 
                     "require".equals(pgName.getIdentifier())) {
@@ -193,6 +199,9 @@ public class JsFile
                         for (AstNode localDep : localDeps.getElements()) {
                             addDep((StringLiteral) localDep);
                         }
+                    } else if ("extend".equals(configName.getIdentifier()) 
+                            && config.getRight() instanceof StringLiteral) {
+                        addDep((StringLiteral) config.getRight());
                     }
                 }
             }

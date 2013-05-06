@@ -63,6 +63,7 @@ public class JsFileTest {
      * Get deps defined by any of these means:
      * config.requires
      * config.uses
+     * config.extend
      * Ext.require
      * 
      * Don't include the classname as a dep and don't include deps more than
@@ -76,6 +77,7 @@ public class JsFileTest {
         expResult.add("OtherLib.SetByExtRequire");
         expResult.add("Sample.Bar");
         expResult.add("OtherLib.SetByUses");
+        expResult.add("Ext.view.View");
         ArrayList<String> result = instance.getDependencies();
         assertEquals(expResult, result);
     }
